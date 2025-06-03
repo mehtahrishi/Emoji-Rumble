@@ -1,6 +1,6 @@
-# 🎮 Emoji Survival Arena
+# 🎮 Emoji Rumble
 
-**Emoji Survival Arena** is a browser-based bullet hell survival game where players control an emoji to dodge endless waves of attacking enemy emojis. The longer you survive, the more difficult the game becomes. Compete on the leaderboard and track your survival history!
+**Emoji Rumble** is a browser-based bullet hell survival game where players control an emoji to dodge endless waves of attacking enemy emojis. The longer you survive, the more difficult the game becomes. Compete on the leaderboard and track your survival history!
 
 ---
 
