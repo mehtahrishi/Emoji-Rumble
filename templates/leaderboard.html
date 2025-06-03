@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji Rumble - Leaderboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="stars-container"></div>
+    
+    <div class="container">
+        <div class="leaderboard">
+            <h1>🏆 Leaderboard</h1>
+            
+            <table id="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Name</th>
+                        <th>Time Survived</th>
+                        <th>Waves Completed</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    <!-- Leaderboard data will be inserted here -->
+                    <tr>
+                        <td colspan="5">Loading leaderboard data...</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <button id="home-btn" class="btn glow-btn">Back Home</button>
+        </div>
+    </div>
+
+    <script>
+        // Fetch leaderboard data
+        fetch('/api/leaderboard')
+            .then(response => response.json())
+            .then(data => {
+                const leaderboardBody = document.getElementById('leaderboard-body');
+                leaderboardBody.innerHTML = '';
+                
+                if (data.length === 0) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = '<td colspan="5">No scores yet. Be the first to play!</td>';
+                    leaderboardBody.appendChild(row);
+                } else {
+                    data.forEach((score, index) => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${index + 1}</td>
+                            <td>${score.name}</td>
+                            <td>${score.time_survived}s</td>
+                            <td>${score.wave}</td>
+                            <td>${new Date(score.date).toLocaleDateString()}</td>
+                        `;
+                        leaderboardBody.appendChild(row);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching leaderboard:', error);
+                const leaderboardBody = document.getElementById('leaderboard-body');
+                leaderboardBody.innerHTML = '<tr><td colspan="5">Error loading leaderboard data.</td></tr>';
+            });
+        
+        // Button event listener
+        document.getElementById('home-btn').addEventListener('click', function() {
+            window.location.href = '/';
+        });
+        
+        // Create stars background
+        const starsContainer = document.querySelector('.stars-container');
+        for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.classList.add('star');
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.top = `${Math.random() * 100}%`;
+            star.style.animationDelay = `${Math.random() * 10}s`;
+            starsContainer.appendChild(star);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji Rumble</title>
+        <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="stars-container"></div>
+    
+    <div class="container">
+        <div class="game-title">
+            <h1>🎮 Emoji Rumble</h1>
+        </div>
+        
+        <div class="emoji-selection">
+            <h2>Choose Your Emoji</h2>
+            <div class="emoji-options">
+                <div class="emoji-option selected" data-emoji="😎">😎</div>
+                <div class="emoji-option" data-emoji="🗿">🗿</div>
+                <div class="emoji-option" data-emoji="🦄">🦄</div>
+            </div>
+        </div>
+        
+        <div class="menu">
+            <button id="start-game" class="btn glow-btn">Start Game</button>
+            <button id="view-leaderboard" class="btn glow-btn">View Leaderboard</button>
+        </div>
+        
+        <div class="game-description">
+            <p>Survive waves of attacking emojis in this bullet hell game!</p>
+            <p>Use arrow keys to move.</p>
+            <p>Avoid enemy emojis at all costs.</p>
+        </div>
+    </div>
+
+    <script>
+        // Emoji selection
+        const emojiOptions = document.querySelectorAll('.emoji-option');
+        let selectedEmoji = '🗿'; // Default emoji
+        
+        emojiOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove selected class from all options
+                emojiOptions.forEach(opt => opt.classList.remove('selected'));
+                // Add selected class to clicked option
+                this.classList.add('selected');
+                // Update selected emoji
+                selectedEmoji = this.getAttribute('data-emoji');
+            });
+        });
+        
+        document.getElementById('start-game').addEventListener('click', function() {
+            // Pass selected emoji as URL parameter
+            window.location.href = `/game?emoji=${encodeURIComponent(selectedEmoji)}`;
+        });
+        
+        document.getElementById('view-leaderboard').addEventListener('click', function() {
+            window.location.href = '/leaderboard';
+        });
+        
+        // Create stars background
+        const starsContainer = document.querySelector('.stars-container');
+        for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.classList.add('star');
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.top = `${Math.random() * 100}%`;
+            star.style.animationDelay = `${Math.random() * 10}s`;
+            starsContainer.appendChild(star);
+        }
+    </script>
+</body>
+</html>

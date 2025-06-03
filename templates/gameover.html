@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji Rumble - Game Over</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="stars-container"></div>
+    
+    <div class="container">
+        <div class="game-over-screen">
+            <h1>Game Over</h1>
+            
+            <div class="score-summary">
+                <p>Survival Time: <span id="final-time"></span>s</p>
+                <p>Waves Completed: <span id="final-wave"></span></p>
+                <p>Last Wave: <span id="final-emoji"></span></p>
+            </div>
+            
+            <div class="success-message">
+                <p>Score saved successfully!</p>
+            </div>
+            
+            <div class="post-game-buttons">
+                <button id="home-btn" class="btn glow-btn">Back Home</button>
+                <button id="leaderboard-btn" class="btn glow-btn">View Leaderboard</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get score data from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const time = urlParams.get('time');
+        const wave = urlParams.get('wave');
+        const emoji = urlParams.get('emoji');
+        
+        // Display score data
+        document.getElementById('final-time').textContent = time;
+        document.getElementById('final-wave').textContent = wave;
+        document.getElementById('final-emoji').textContent = emoji;
+        
+        // Button event listeners
+        document.getElementById('home-btn').addEventListener('click', function() {
+            window.location.href = '/';
+        });
+        
+        document.getElementById('leaderboard-btn').addEventListener('click', function() {
+            window.location.href = '/leaderboard';
+        });
+        
+        // Create stars background
+        const starsContainer = document.querySelector('.stars-container');
+        for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.classList.add('star');
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.top = `${Math.random() * 100}%`;
+            star.style.animationDelay = `${Math.random() * 10}s`;
+            starsContainer.appendChild(star);
+        }
+    </script>
+</body>
+</html>

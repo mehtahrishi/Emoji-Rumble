@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji Rumble - Game</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="stars-container"></div>
+    
+    <div class="game-container">
+        <div class="hud">
+            <div class="health-container">
+                <span>Health:</span>
+                <div class="health-bar">
+                    <div class="health-fill"></div>
+                </div>
+            </div>
+            <div class="time-container">Time: <span id="time-counter">0</span>s</div>
+            <div class="wave-container">Wave: <span id="wave-emoji">😈</span></div>
+        </div>
+        
+        <canvas id="game-canvas"></canvas>
+        
+        <div id="game-over" class="hidden">
+            <h2>Game Over</h2>
+            <div class="score-summary">
+                <p>Survival Time: <span id="final-time">0</span>s</p>
+                <p>Waves Completed: <span id="final-wave">0</span></p>
+                <p>Last Wave: <span id="final-emoji"></span></p>
+            </div>
+            <div class="save-score">
+                <input type="text" id="player-name" placeholder="Enter your name">
+                <button id="save-score-btn" class="btn glow-btn">Save Score</button>
+            </div>
+            <div id="score-saved" class="hidden">
+                <p>Score saved successfully!</p>
+                <div class="post-game-buttons">
+                    <button id="home-btn" class="btn glow-btn">Back Home</button>
+                    <button id="leaderboard-btn" class="btn glow-btn">View Leaderboard</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="background-music" loop>
+        <source src="https://res.cloudinary.com/dfzqhhywm/video/upload/v1748808227/VAPORCHROME_-_DECKED_slowed_reverb_instrumental_TikTok_version_jaevtg.mp3" type="audio/mp3">
+    </audio>
+
+    <script>
+        // Get selected emoji from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const selectedEmoji = urlParams.get('emoji') || '🗿'; // Default to 😎 if not specified
+        
+        // Pass the selected emoji to the game.js
+        window.playerSelectedEmoji = selectedEmoji;
+    </script>
+    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+    <script>
+        // Create stars background
+        const starsContainer = document.querySelector('.stars-container');
+        for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.classList.add('star');
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.top = `${Math.random() * 100}%`;
+            star.style.animationDelay = `${Math.random() * 10}s`;
+            starsContainer.appendChild(star);
+        }
+    </script>
+</body>
+</html>
