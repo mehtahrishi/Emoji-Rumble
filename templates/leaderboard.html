@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Emoji Rumble - Leaderboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
@@ -13,23 +13,25 @@
         <div class="leaderboard">
             <h1>🏆 Leaderboard</h1>
             
-            <table id="leaderboard-table">
-                <thead>
-                    <tr>
-                        <th>Rank</th>
-                        <th>Name</th>
-                        <th>Time Survived</th>
-                        <th>Waves Completed</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody id="leaderboard-body">
-                    <!-- Leaderboard data will be inserted here -->
-                    <tr>
-                        <td colspan="5">Loading leaderboard data...</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="table-container">
+                <table id="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Name</th>
+                            <th>Time</th>
+                            <th>Waves</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body">
+                        <!-- Leaderboard data will be inserted here -->
+                        <tr>
+                            <td colspan="5">Loading leaderboard data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
             
             <button id="home-btn" class="btn glow-btn">Back Home</button>
         </div>
