@@ -2,7 +2,7 @@
 
 ## 🔥 THE ULTIMATE EMOJI SHOWDOWN! 🔥
 
-![Emoji Battle](https://res.cloudinary.com/dfzqhhywm/video/upload/v1748808227/emoji-game-screenshot.png)
+![Emoji Battle](https://res.cloudinary.com/dfzqhhywm/image/upload/v1748982694/Screenshot_2025-06-04_020031_zsrtbj.png)
 
 ### 👾 WHAT'S THE DEAL?
 
