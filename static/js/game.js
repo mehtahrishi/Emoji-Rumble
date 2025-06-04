@@ -26,6 +26,15 @@ let speedBoostTimeRemaining = 0;
 let playerHasWeapon = false;
 let weaponTimeRemaining = 0;
 let playerProjectiles = [];
+let timeSlowActive = false;
+let timeSlowTimeRemaining = 0;
+let timeSlowFactor = 1;
+let enemyFreezeActive = false;
+let enemyFreezeTimeRemaining = 0;
+let magnetActive = false;
+let magnetTimeRemaining = 0;
+let magnetRadius = 0;
+let particles = [];
 
 // Player variables
 const player = {
@@ -59,11 +68,14 @@ const bossTypes = [
 
 // Power-up types
 const powerUpTypes = [
-    { emoji: '❤️', type: 'health', duration: 0, value: 25, chance: 0.3 },
-    { emoji: '🛡️', type: 'shield', duration: 10, value: 0, chance: 0.2 },
-    { emoji: '⚡', type: 'speed', duration: 8, value: 3, chance: 0.2 },
-    { emoji: '🔫', type: 'weapon', duration: 15, value: 0, chance: 0.2 },
-    { emoji: '💣', type: 'bomb', duration: 0, value: 0, chance: 0.1 }
+    { emoji: '❤️', type: 'health', duration: 0, value: 25, chance: 0.2 },
+    { emoji: '🛡️', type: 'shield', duration: 10, value: 0, chance: 0.15 },
+    { emoji: '⚡', type: 'speed', duration: 8, value: 3, chance: 0.15 },
+    { emoji: '🔫', type: 'weapon', duration: 15, value: 0, chance: 0.15 },
+    { emoji: '💣', type: 'bomb', duration: 0, value: 0, chance: 0.1 },
+    { emoji: '⏱️', type: 'timeSlow', duration: 8, value: 0.5, chance: 0.1 }, // Time slow - enemies move at half speed
+    { emoji: '❄️', type: 'freeze', duration: 5, value: 0, chance: 0.1 },     // Freeze all enemies
+    { emoji: '🧲', type: 'magnet', duration: 10, value: 0, chance: 0.05 }    // Attract power-ups to player
 ];
 
 // Key states
@@ -154,12 +166,140 @@ function gameLoop() {
         }
     }
     
-    // Spawn enemies every 1 second (but not during boss waves)
+    // Spawn enemies in waves with specific patterns (but not during boss waves)
     if (!isBossWave) {
         enemySpawnTimer += 1/60;
-        if (enemySpawnTimer >= 1) {
-            enemySpawnTimer = 0;
-            spawnEnemy();
+        
+        // Wave pattern: specific number of enemies at specific times within the 15-second wave
+        const waveTime = waveTimer % 15; // Time within the current wave (0-15 seconds)
+        
+        // First wave pattern (15 seconds total)
+        if (currentWave % 3 === 1) {
+            // 1st second: 1 enemy
+            if (Math.floor(waveTime) === 1 && enemySpawnTimer >= 1) {
+                enemySpawnTimer = 0;
+                spawnEnemy();
+            }
+            // 4th second: 2 enemies
+            else if (Math.floor(waveTime) === 4 && enemySpawnTimer >= 1) {
+                enemySpawnTimer = 0;
+                spawnEnemy();
+                setTimeout(() => spawnEnemy(), 100); // Slight delay between spawns
+            }
+            // 7th second: 3 enemies
+            else if (Math.floor(waveTime) === 7 && enemySpawnTimer >= 1) {
+                enemySpawnTimer = 0;
+                spawnEnemy();
+                setTimeout(() => spawnEnemy(), 100);
+                setTimeout(() => spawnEnemy(), 200);
+            }
+            // 10th second: 1 enemy
+            else if (Math.floor(waveTime) === 10 && enemySpawnTimer >= 1) {
+                enemySpawnTimer = 0;
+                spawnEnemy();
+            }
+            // 12th second: 2 enemies
+            else if (Math.floor(waveTime) === 12 && enemySpawnTimer >= 1) {
+                enemySpawnTimer = 0;
+                spawnEnemy();
+                setTimeout(() => spawnEnemy(), 100);
+            }
+            // 14th second: 5 enemies
+            else if (Math.floor(waveTime) === 14 && enemySpawnTimer >= 1) {
+                enemySpawnTimer = 0;
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => spawnEnemy(), i * 100);
+                }
+            }
+        }
+        // Second wave pattern (for waves 2, 5, 8, etc.)
+        else if (currentWave % 3 === 2) {
+            // 2nd second: 2 enemies
+            if (Math.floor(waveTime) === 2 && enemySpawnTimer >= 1) {
+                enemySpawnTimer = 0;
+                spawnEnemy();
+                setTimeout(() => spawnEnemy(), 100);
+            }
+            // 5th second: 3 enemies
+            else if (Math.floor(waveTime) === 5 && enemySpawnTimer >= 1) {
+                enemySpawnTimer = 0;
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => spawnEnemy(), i * 100);
+                }
+            }
+            // 8th second: 4 enemies
+            else if (Math.floor(waveTime) === 8 && enemySpawnTimer >= 1) {
+                enemySpawnTimer = 0;
+                for (let i = 0; i < 4; i++) {
+                    setTimeout(() => spawnEnemy(), i * 100);
+                }
+            }
+            // 11th second: 2 enemies
+            else if (Math.floor(waveTime) === 11 && enemySpawnTimer >= 1) {
+                enemySpawnTimer = 0;
+                spawnEnemy();
+                setTimeout(() => spawnEnemy(), 100);
+            }
+            // 13th second: 3 enemies
+            else if (Math.floor(waveTime) === 13 && enemySpawnTimer >= 1) {
+                enemySpawnTimer = 0;
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => spawnEnemy(), i * 100);
+                }
+            }
+        }
+        // Third wave pattern (for waves 3, 6, 9, etc.)
+        else {
+            // 1st second: 3 enemies
+            if (Math.floor(waveTime) === 1 && enemySpawnTimer >= 1) {
+                enemySpawnTimer = 0;
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => spawnEnemy(), i * 100);
+                }
+            }
+            // 3rd second: 2 enemies
+            else if (Math.floor(waveTime) === 3 && enemySpawnTimer >= 1) {
+                enemySpawnTimer = 0;
+                spawnEnemy();
+                setTimeout(() => spawnEnemy(), 100);
+            }
+            // 6th second: 4 enemies
+            else if (Math.floor(waveTime) === 6 && enemySpawnTimer >= 1) {
+                enemySpawnTimer = 0;
+                for (let i = 0; i < 4; i++) {
+                    setTimeout(() => spawnEnemy(), i * 100);
+                }
+            }
+            // 9th second: 2 enemies
+            else if (Math.floor(waveTime) === 9 && enemySpawnTimer >= 1) {
+                enemySpawnTimer = 0;
+                spawnEnemy();
+                setTimeout(() => spawnEnemy(), 100);
+            }
+            // 12th second: 5 enemies
+            else if (Math.floor(waveTime) === 12 && enemySpawnTimer >= 1) {
+                enemySpawnTimer = 0;
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => spawnEnemy(), i * 100);
+                }
+            }
+        }
+        
+        // At the end of each wave (14.9 seconds), clear all remaining enemies
+        if (waveTime >= 14.9 && waveTime < 15) {
+            // Clear all enemies from the current wave
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                if (!enemies[i].isBoss) {
+                    createExplosionEffect(enemies[i].x + enemies[i].size/2, enemies[i].y + enemies[i].size/2, enemies[i].emoji);
+                    enemies.splice(i, 1);
+                }
+            }
+        }
+        
+        // Randomly spawn bosses during the wave (not at wave transitions)
+        if (waveTime > 2 && waveTime < 14 && Math.random() < 0.0005) { // Very small chance each frame
+            const bossIndex = Math.floor(Math.random() * bossTypes.length);
+            spawnBoss(bossTypes[bossIndex]);
         }
     }
     
@@ -176,15 +316,18 @@ function gameLoop() {
         });
     }
     
-    // Spawn power-ups randomly (every 10-15 seconds)
+    // Spawn power-ups randomly (every 5 seconds)
     powerUpTimer += 1/60;
-    if (powerUpTimer >= 10 + Math.random() * 5) {
+    if (powerUpTimer >= 5) {
         powerUpTimer = 0;
         spawnPowerUp();
     }
     
     // Update power-up timers
     updatePowerUpTimers();
+    
+    // Update particles
+    updateParticles();
     
     // Player shooting (if has weapon power-up)
     if (playerHasWeapon) {
@@ -313,6 +456,47 @@ function spawnBoss(bossType) {
     };
     
     enemies.push(boss);
+    
+    // When a boss appears, spawn 3 random power-ups near the player
+    const powerUpTypes = [
+        { emoji: '❤️', type: 'health', duration: 0, value: 25, chance: 0.2 },
+        { emoji: '🛡️', type: 'shield', duration: 10, value: 0, chance: 0.15 },
+        { emoji: '⚡', type: 'speed', duration: 8, value: 3, chance: 0.15 },
+        { emoji: '🔫', type: 'weapon', duration: 15, value: 0, chance: 0.15 },
+        { emoji: '💣', type: 'bomb', duration: 0, value: 0, chance: 0.1 },
+        { emoji: '⏱️', type: 'timeSlow', duration: 8, value: 0.5, chance: 0.1 },
+        { emoji: '❄️', type: 'freeze', duration: 5, value: 0, chance: 0.1 },
+        { emoji: '🧲', type: 'magnet', duration: 10, value: 0, chance: 0.05 }
+    ];
+    
+    // Shuffle the power-up types array
+    const shuffledPowerUps = [...powerUpTypes].sort(() => Math.random() - 0.5);
+    
+    // Take the first 3 types
+    const selectedPowerUps = shuffledPowerUps.slice(0, 3);
+    
+    // Spawn the selected power-ups near the player
+    selectedPowerUps.forEach((powerUpType, index) => {
+        // Calculate position near player (in a triangle formation)
+        const angle = (index / 3) * Math.PI * 2;
+        const distance = 80; // Distance from player
+        
+        const powerUp = {
+            x: player.x + Math.cos(angle) * distance,
+            y: player.y + Math.sin(angle) * distance,
+            size: 30,
+            emoji: powerUpType.emoji,
+            type: powerUpType.type,
+            duration: powerUpType.duration,
+            value: powerUpType.value
+        };
+        
+        // Keep power-up within canvas bounds
+        powerUp.x = Math.max(30, Math.min(canvas.width - 60, powerUp.x));
+        powerUp.y = Math.max(30, Math.min(canvas.height - 60, powerUp.y));
+        
+        powerUps.push(powerUp);
+    });
 }
 
 // Spawn a power-up
@@ -408,12 +592,16 @@ function fireProjectile(enemy) {
 
 // Fire a projectile from the player
 function firePlayerProjectile() {
-    // Fire in 4 directions (up, down, left, right)
+    // Fire in 8 directions (up, down, left, right, and diagonals)
     const directions = [
-        { dx: 0, dy: -1 }, // Up
-        { dx: 0, dy: 1 },  // Down
-        { dx: -1, dy: 0 }, // Left
-        { dx: 1, dy: 0 }   // Right
+        { dx: 0, dy: -1 },    // Up
+        { dx: 0, dy: 1 },     // Down
+        { dx: -1, dy: 0 },    // Left
+        { dx: 1, dy: 0 },     // Right
+        { dx: -0.7, dy: -0.7 }, // Up-Left
+        { dx: 0.7, dy: -0.7 },  // Up-Right
+        { dx: -0.7, dy: 0.7 },  // Down-Left
+        { dx: 0.7, dy: 0.7 }    // Down-Right
     ];
     
     directions.forEach(dir => {
@@ -425,7 +613,7 @@ function firePlayerProjectile() {
             speed: 8,
             dx: dir.dx,
             dy: dir.dy,
-            damage: 10,
+            damage: 50, // Increased damage for instant kills
             fromPlayer: true
         };
         
@@ -435,8 +623,20 @@ function firePlayerProjectile() {
 
 // Update enemy positions
 function updateEnemies() {
+    // If enemies are frozen, don't update positions
+    if (enemyFreezeActive) {
+        return;
+    }
+    
     for (let i = enemies.length - 1; i >= 0; i--) {
         const enemy = enemies[i];
+        
+        // Apply time slow effect if active
+        const effectiveSpeed = timeSlowActive ? enemy.speed * timeSlowFactor : enemy.speed;
+        
+        // Store original speed and update with effective speed
+        const originalSpeed = enemy.speed;
+        enemy.speed = effectiveSpeed;
         
         // Update enemy based on its movement pattern
         switch (enemy.pattern) {
@@ -469,6 +669,9 @@ function updateEnemies() {
                 moveEnemyDirect(enemy);
         }
         
+        // Restore original speed
+        enemy.speed = originalSpeed;
+        
         // Check collision with player
         if (checkCollision(player, enemy)) {
             // If player has shield, don't take damage but reduce shield time
@@ -488,6 +691,9 @@ function updateEnemies() {
             enemy.health -= 10; // Player collision damages enemy too
             
             if (enemy.health <= 0) {
+                // Create explosion effect
+                createExplosionEffect(enemy.x + enemy.size/2, enemy.y + enemy.size/2, enemy.emoji);
+                
                 // If it's a splitter boss and big enough, split into smaller enemies
                 if (enemy.pattern === 'splitter' && enemy.size > 30) {
                     splitEnemy(enemy);
@@ -803,6 +1009,19 @@ function updatePowerUps() {
     for (let i = powerUps.length - 1; i >= 0; i--) {
         const powerUp = powerUps[i];
         
+        // If magnet is active, move power-ups towards player
+        if (magnetActive) {
+            const dx = player.x + player.size/2 - (powerUp.x + powerUp.size/2);
+            const dy = player.y + player.size/2 - (powerUp.y + powerUp.size/2);
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < magnetRadius) {
+                const speed = 5;
+                powerUp.x += (dx / distance) * speed;
+                powerUp.y += (dy / distance) * speed;
+            }
+        }
+        
         // Check collision with player
         if (checkCollision(player, powerUp)) {
             // Apply power-up effect
@@ -816,6 +1035,9 @@ function updatePowerUps() {
 
 // Apply power-up effect
 function applyPowerUp(powerUp) {
+    // Create power-up collection particles
+    createPowerUpCollectionEffect(powerUp);
+    
     switch (powerUp.type) {
         case 'health':
             // Restore health
@@ -842,6 +1064,25 @@ function applyPowerUp(powerUp) {
             // Clear all enemies and projectiles
             activateBomb();
             break;
+        case 'timeSlow':
+            // Slow down time for enemies
+            timeSlowActive = true;
+            timeSlowFactor = powerUp.value;
+            timeSlowTimeRemaining = powerUp.duration;
+            break;
+        case 'freeze':
+            // Freeze all enemies
+            enemyFreezeActive = true;
+            enemyFreezeTimeRemaining = powerUp.duration;
+            // Create freeze effect
+            createFreezeEffect();
+            break;
+        case 'magnet':
+            // Activate power-up magnet
+            magnetActive = true;
+            magnetTimeRemaining = powerUp.duration;
+            magnetRadius = 150; // Radius for attracting power-ups
+            break;
     }
 }
 
@@ -851,11 +1092,14 @@ function activateBomb() {
     for (let i = enemies.length - 1; i >= 0; i--) {
         const enemy = enemies[i];
         if (!enemy.isBoss) {
+            // Create explosion effect for each enemy
+            createExplosionEffect(enemy.x + enemy.size/2, enemy.y + enemy.size/2, enemy.emoji);
             enemies.splice(i, 1);
         } else {
             // Damage bosses
             enemy.health -= 50;
             if (enemy.health <= 0) {
+                createExplosionEffect(enemy.x + enemy.size/2, enemy.y + enemy.size/2, enemy.emoji);
                 enemies.splice(i, 1);
             }
         }
@@ -871,6 +1115,25 @@ function activateBomb() {
     // Visual effect
     ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Create bomb explosion particles
+    for (let i = 0; i < 50; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const distance = Math.random() * 150;
+        const x = canvas.width / 2 + Math.cos(angle) * distance;
+        const y = canvas.height / 2 + Math.sin(angle) * distance;
+        
+        particles.push({
+            x,
+            y,
+            size: 5 + Math.random() * 10,
+            color: `hsl(${Math.random() * 30}, 100%, 50%)`, // Red-orange-yellow
+            dx: Math.cos(angle) * (2 + Math.random() * 3),
+            dy: Math.sin(angle) * (2 + Math.random() * 3),
+            life: 60, // 1 second at 60 FPS
+            type: 'explosion'
+        });
+    }
 }
 
 // Update power-up timers
@@ -900,6 +1163,35 @@ function updatePowerUpTimers() {
         if (weaponTimeRemaining <= 0) {
             playerHasWeapon = false;
             weaponTimeRemaining = 0;
+        }
+    }
+    
+    // Update time slow timer
+    if (timeSlowActive) {
+        timeSlowTimeRemaining -= 1/60;
+        if (timeSlowTimeRemaining <= 0) {
+            timeSlowActive = false;
+            timeSlowTimeRemaining = 0;
+            timeSlowFactor = 1;
+        }
+    }
+    
+    // Update enemy freeze timer
+    if (enemyFreezeActive) {
+        enemyFreezeTimeRemaining -= 1/60;
+        if (enemyFreezeTimeRemaining <= 0) {
+            enemyFreezeActive = false;
+            enemyFreezeTimeRemaining = 0;
+        }
+    }
+    
+    // Update magnet timer
+    if (magnetActive) {
+        magnetTimeRemaining -= 1/60;
+        if (magnetTimeRemaining <= 0) {
+            magnetActive = false;
+            magnetTimeRemaining = 0;
+            magnetRadius = 0;
         }
     }
 }
@@ -1077,6 +1369,12 @@ function gameOver() {
     gameActive = false;
     bgMusic.pause();
     
+    // Calculate achievement stars
+    let stars = 0;
+    if (gameTime >= 15) stars = 1;
+    if (gameTime >= 30) stars = 2;
+    if (gameTime >= 45) stars = 3;
+    
     // Show game over screen
     const gameOverScreen = document.getElementById('game-over');
     gameOverScreen.classList.remove('hidden');
@@ -1085,6 +1383,18 @@ function gameOver() {
     document.getElementById('final-time').textContent = Math.floor(gameTime);
     document.getElementById('final-wave').textContent = wavesCompleted;
     document.getElementById('final-emoji').textContent = waveEmoji.textContent;
+    
+    // Update achievement stars
+    const starsContainer = document.getElementById('achievement-stars');
+    if (starsContainer) {
+        starsContainer.innerHTML = '';
+        for (let i = 0; i < 3; i++) {
+            const starElement = document.createElement('span');
+            starElement.className = i < stars ? 'star-achieved' : 'star-empty';
+            starElement.textContent = i < stars ? '★' : '☆';
+            starsContainer.appendChild(starElement);
+        }
+    }
     
     // Set up save score button
     document.getElementById('save-score-btn').addEventListener('click', saveScore);
@@ -1138,7 +1448,7 @@ function saveScore() {
     });
 }
 
-// Event listeners
+// Event listeners for keyboard
 window.addEventListener('keydown', (e) => {
     if (e.key in keys) {
         keys[e.key] = true;
@@ -1152,6 +1462,64 @@ window.addEventListener('keyup', (e) => {
         e.preventDefault();
     }
 });
+
+// Touch controls for mobile
+let touchStartX = 0;
+let touchStartY = 0;
+let touchEndX = 0;
+let touchEndY = 0;
+const minSwipeDistance = 30; // Minimum distance for a swipe
+
+// Reset all keys first to prevent multiple directions
+function resetKeys() {
+    keys.ArrowUp = false;
+    keys.ArrowDown = false;
+    keys.ArrowLeft = false;
+    keys.ArrowRight = false;
+}
+
+// Handle touch start
+canvas.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+    e.preventDefault();
+}, { passive: false });
+
+// Handle touch move (for continuous movement)
+canvas.addEventListener('touchmove', (e) => {
+    touchEndX = e.changedTouches[0].screenX;
+    touchEndY = e.changedTouches[0].screenY;
+    
+    const deltaX = touchEndX - touchStartX;
+    const deltaY = touchEndY - touchStartY;
+    
+    resetKeys();
+    
+    // Determine direction based on the greater movement
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        // Horizontal movement
+        if (deltaX > minSwipeDistance) {
+            keys.ArrowRight = true;
+        } else if (deltaX < -minSwipeDistance) {
+            keys.ArrowLeft = true;
+        }
+    } else {
+        // Vertical movement
+        if (deltaY > minSwipeDistance) {
+            keys.ArrowDown = true;
+        } else if (deltaY < -minSwipeDistance) {
+            keys.ArrowUp = true;
+        }
+    }
+    
+    e.preventDefault();
+}, { passive: false });
+
+// Handle touch end
+canvas.addEventListener('touchend', (e) => {
+    resetKeys();
+    e.preventDefault();
+}, { passive: false });
 
 // Resize handler
 window.addEventListener('resize', () => {
@@ -1174,3 +1542,343 @@ for (let i = 0; i < 100; i++) {
 
 // Start game when page loads
 window.addEventListener('load', init);
+
+// Particle system functions
+// -------------------------------
+
+// Create explosion effect when enemy is destroyed
+function createExplosionEffect(x, y, emoji) {
+    // Create particles based on the emoji color theme
+    let color;
+    
+    // Determine color based on emoji
+    switch(emoji) {
+        case '😈': color = '#9400D3'; break; // Purple
+        case '🤖': color = '#4682B4'; break; // Steel blue
+        case '💀': color = '#FFFFFF'; break; // White
+        case '👿': color = '#8B0000'; break; // Dark red
+        case '👹': color = '#FF0000'; break; // Red
+        case '👾': color = '#9370DB'; break; // Medium purple
+        default: color = '#FF4500'; break;   // Orange-red
+    }
+    
+    // Create explosion particles
+    for (let i = 0; i < 20; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 1 + Math.random() * 3;
+        
+        particles.push({
+            x,
+            y,
+            size: 3 + Math.random() * 5,
+            color,
+            dx: Math.cos(angle) * speed,
+            dy: Math.sin(angle) * speed,
+            life: 30 + Math.random() * 30, // 0.5-1 second at 60 FPS
+            type: 'explosion',
+            alpha: 1
+        });
+    }
+    
+    // Add text particle with the emoji
+    particles.push({
+        x,
+        y,
+        text: emoji,
+        size: 20,
+        dy: -2,
+        life: 60,
+        type: 'text',
+        alpha: 1
+    });
+}
+
+// Create power-up collection effect
+function createPowerUpCollectionEffect(powerUp) {
+    const x = powerUp.x + powerUp.size / 2;
+    const y = powerUp.y + powerUp.size / 2;
+    
+    // Determine color based on power-up type
+    let color;
+    switch(powerUp.type) {
+        case 'health': color = '#FF0000'; break;      // Red
+        case 'shield': color = '#00FFFF'; break;      // Cyan
+        case 'speed': color = '#FFFF00'; break;       // Yellow
+        case 'weapon': color = '#00FF00'; break;      // Green
+        case 'bomb': color = '#FF6600'; break;        // Orange
+        case 'timeSlow': color = '#9932CC'; break;    // Purple
+        case 'freeze': color = '#87CEFA'; break;      // Light blue
+        case 'magnet': color = '#FF00FF'; break;      // Magenta
+        default: color = '#FFFFFF'; break;            // White
+    }
+    
+    // Create sparkle particles
+    for (let i = 0; i < 15; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 5 + Math.random() * 15;
+        
+        particles.push({
+            x: x + Math.cos(angle) * distance,
+            y: y + Math.sin(angle) * distance,
+            size: 2 + Math.random() * 3,
+            color,
+            dx: Math.cos(angle) * 1.5,
+            dy: Math.sin(angle) * 1.5,
+            life: 20 + Math.random() * 20,
+            type: 'sparkle',
+            alpha: 1
+        });
+    }
+    
+    // Add text particle with the power-up emoji
+    particles.push({
+        x,
+        y,
+        text: powerUp.emoji,
+        size: 20,
+        dy: -2,
+        life: 60,
+        type: 'text',
+        alpha: 1
+    });
+}
+
+// Create freeze effect
+function createFreezeEffect() {
+    // Create snowflake particles across the screen
+    for (let i = 0; i < 100; i++) {
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height;
+        
+        particles.push({
+            x,
+            y,
+            size: 2 + Math.random() * 4,
+            color: '#FFFFFF',
+            dx: (Math.random() - 0.5) * 2,
+            dy: 1 + Math.random() * 2,
+            life: 60 + Math.random() * 60,
+            type: 'snowflake',
+            alpha: 0.7
+        });
+    }
+}
+
+// Update particles
+function updateParticles() {
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const particle = particles[i];
+        
+        // Update position
+        if (particle.dx !== undefined) particle.x += particle.dx;
+        if (particle.dy !== undefined) particle.y += particle.dy;
+        
+        // Update life
+        particle.life--;
+        
+        // Fade out near end of life
+        if (particle.life < 10) {
+            particle.alpha = particle.life / 10;
+        }
+        
+        // Remove dead particles
+        if (particle.life <= 0) {
+            particles.splice(i, 1);
+        }
+    }
+}
+
+// Draw particles
+function drawParticles() {
+    particles.forEach(particle => {
+        ctx.globalAlpha = particle.alpha || 1;
+        
+        if (particle.type === 'text') {
+            // Draw text particle (emoji)
+            ctx.font = `${particle.size}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(particle.text, particle.x, particle.y);
+        } else if (particle.type === 'snowflake') {
+            // Draw snowflake
+            ctx.beginPath();
+            ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+            ctx.fillStyle = particle.color;
+            ctx.fill();
+            ctx.closePath();
+            
+            // Add cross shape for snowflake
+            ctx.beginPath();
+            ctx.moveTo(particle.x - particle.size, particle.y);
+            ctx.lineTo(particle.x + particle.size, particle.y);
+            ctx.moveTo(particle.x, particle.y - particle.size);
+            ctx.lineTo(particle.x, particle.y + particle.size);
+            ctx.strokeStyle = particle.color;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.closePath();
+        } else {
+            // Draw regular particle
+            ctx.beginPath();
+            ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+            ctx.fillStyle = particle.color;
+            ctx.fill();
+            ctx.closePath();
+        }
+    });
+    
+    // Reset global alpha
+    ctx.globalAlpha = 1;
+}
+
+// Draw game elements
+function drawGame() {
+    // Draw power-ups
+    powerUps.forEach(powerUp => {
+        drawEmoji(powerUp.emoji, powerUp.x, powerUp.y, powerUp.size);
+        
+        // Add glow effect to power-ups
+        ctx.beginPath();
+        ctx.arc(powerUp.x + powerUp.size/2, powerUp.y + powerUp.size/2, powerUp.size/2 + 5, 0, Math.PI * 2);
+        ctx.strokeStyle = '#ffff00';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.closePath();
+    });
+    
+    // Draw player
+    drawEmoji(player.emoji, player.x, player.y, player.size);
+    
+    // Draw shield if active
+    if (playerHasShield) {
+        ctx.beginPath();
+        ctx.arc(player.x + player.size/2, player.y + player.size/2, player.size/2 + 10, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(0, 255, 255, 0.7)';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.closePath();
+    }
+    
+    // Draw magnet field if active
+    if (magnetActive) {
+        ctx.beginPath();
+        ctx.arc(player.x + player.size/2, player.y + player.size/2, magnetRadius, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255, 0, 255, 0.3)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.closePath();
+    }
+    
+    // Draw enemies
+    enemies.forEach(enemy => {
+        drawEmoji(enemy.emoji, enemy.x, enemy.y, enemy.size);
+        
+        // Draw frozen effect if freeze is active
+        if (enemyFreezeActive) {
+            ctx.beginPath();
+            ctx.arc(enemy.x + enemy.size/2, enemy.y + enemy.size/2, enemy.size/2 + 5, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(135, 206, 250, 0.7)'; // Light blue
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            ctx.closePath();
+        }
+        
+        // Draw health bar for bosses
+        if (enemy.isBoss) {
+            const healthPercent = enemy.health / enemy.maxHealth;
+            const barWidth = enemy.size * 1.5;
+            const barHeight = 5;
+            const barX = enemy.x + enemy.size/2 - barWidth/2;
+            const barY = enemy.y - 15;
+            
+            // Background
+            ctx.fillStyle = '#333333';
+            ctx.fillRect(barX, barY, barWidth, barHeight);
+            
+            // Health fill
+            ctx.fillStyle = '#ff0000';
+            ctx.fillRect(barX, barY, barWidth * healthPercent, barHeight);
+        }
+    });
+    
+    // Draw projectiles
+    projectiles.forEach(projectile => {
+        ctx.beginPath();
+        ctx.arc(projectile.x, projectile.y, projectile.radius, 0, Math.PI * 2);
+        ctx.fillStyle = projectile.color;
+        ctx.fill();
+        ctx.closePath();
+        
+        // Add glow effect to projectiles
+        ctx.beginPath();
+        ctx.arc(projectile.x, projectile.y, projectile.radius + 2, 0, Math.PI * 2);
+        ctx.strokeStyle = projectile.fromEnemy ? '#ff6666' : '#66ffff';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.closePath();
+    });
+    
+    // Draw player projectiles
+    playerProjectiles.forEach(projectile => {
+        ctx.beginPath();
+        ctx.arc(projectile.x, projectile.y, projectile.radius, 0, Math.PI * 2);
+        ctx.fillStyle = projectile.color;
+        ctx.fill();
+        ctx.closePath();
+        
+        // Add glow effect to player projectiles
+        ctx.beginPath();
+        ctx.arc(projectile.x, projectile.y, projectile.radius + 2, 0, Math.PI * 2);
+        ctx.strokeStyle = '#66ffff';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.closePath();
+    });
+    
+    // Draw particles
+    drawParticles();
+    
+    // Draw power-up status indicators
+    drawPowerUpStatus();
+}
+
+// Draw power-up status indicators
+function drawPowerUpStatus() {
+    const statusY = 40;
+    let statusX = 10;
+    
+    // Shield status
+    if (playerHasShield) {
+        drawStatusIndicator('🛡️', statusX, statusY, shieldTimeRemaining);
+        statusX += 60;
+    }
+    
+    // Speed boost status
+    if (playerSpeedBoost > 0) {
+        drawStatusIndicator('⚡', statusX, statusY, speedBoostTimeRemaining);
+        statusX += 60;
+    }
+    
+    // Weapon status
+    if (playerHasWeapon) {
+        drawStatusIndicator('🔫', statusX, statusY, weaponTimeRemaining);
+        statusX += 60;
+    }
+    
+    // Time slow status
+    if (timeSlowActive) {
+        drawStatusIndicator('⏱️', statusX, statusY, timeSlowTimeRemaining);
+        statusX += 60;
+    }
+    
+    // Freeze status
+    if (enemyFreezeActive) {
+        drawStatusIndicator('❄️', statusX, statusY, enemyFreezeTimeRemaining);
+        statusX += 60;
+    }
+    
+    // Magnet status
+    if (magnetActive) {
+        drawStatusIndicator('🧲', statusX, statusY, magnetTimeRemaining);
+    }
+}
