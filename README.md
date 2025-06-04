@@ -29,7 +29,7 @@
   * Buttons: `Back Home`, `View Leaderboard`
 * 🏆 Online leaderboard and individual player history.
 * 📊 MongoDB-powered backend with Flask.
-* 📱 Mobile-responsive canvas UI with retro CRT aesthetic.
+* 💻 Laptop & PC responsive canvas UI with retro CRT aesthetic.
 
 ### 🆕 New Features Added
 
@@ -93,30 +93,6 @@ emoji-survival-arena/
 
 ---
 
-## 🔐 Environment Variables
-
-Create a `.env` file in the root directory:
-
-```env
-MONGO_URI=mongodb+srv://username:password@cluster0.zbozo.mongodb.net/emoji_survival_arena?retryWrites=true&w=majority&appName=Cluster0
-```
-
-Install and use `python-dotenv` in `app.py`:
-
-```bash
-pip install python-dotenv
-```
-
-```python
-from dotenv import load_dotenv
-import os
-load_dotenv()
-mongo_uri = os.getenv("MONGO_URI")
-client = MongoClient(mongo_uri)
-```
-
----
-
 ## 🧠 Game Mechanics & Progression
 
 * ⏱ **Every 15 seconds**:
@@ -148,7 +124,7 @@ client = MongoClient(mongo_uri)
 | Acceleration SFX | [SFX](https://res.cloudinary.com/dfzqhhywm/video/upload/v1748808614/acceleration-sfx_G_minor_myayoh.wav)                                                        |
 | Brake SFX        | [SFX](https://res.cloudinary.com/dfzqhhywm/video/upload/v1748808607/violent-car-breaks_136bpm_F_major_i9i8tg.wav)                                               |
 | Enemy Emojis     | 😈 🤖 💀 👿 👹 👾 (Unicode or custom sprite)                                                                                                                    |
-| Player Emojis    | 😎 😂 🦄 (user selected / default emoji)                                                                                                                        |
+| Player Emojis    | 😎 🗿 🦄 (user selected / default emoji)                                                                                                                        |
 | Power-up Emojis  | ❤️ 🛡️ ⚡ 🔫 💣 (Unicode)                                                                                                                                      |
 
 ---
@@ -228,4 +204,4 @@ Pages:
 
 ## 👨‍💻 Author
 
-Built with ❤️ by Rishi ([@mehtahrishi45](https://github.com/mehtahrishi45))
+Built with ❤️ by Hrishi ([@mehtahrishi45](https://github.com/mehtahrishi))
