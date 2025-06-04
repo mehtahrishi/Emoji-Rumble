@@ -2,9 +2,28 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Emoji Rumble - Game Over</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .achievement-stars {
+            margin: 20px 0;
+            font-size: 2.5rem;
+            letter-spacing: 10px;
+        }
+        .star-achieved {
+            color: gold;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+        }
+        .star-empty {
+            color: #555;
+        }
+        .achievement-text {
+            font-size: 0.8rem;
+            margin-bottom: 20px;
+            color: #aaa;
+        }
+    </style>
 </head>
 <body>
     <div class="stars-container"></div>
@@ -19,13 +38,30 @@
                 <p>Last Wave: <span id="final-emoji"></span></p>
             </div>
             
-            <div class="success-message">
-                <p>Score saved successfully!</p>
+            <div class="achievement-stars" id="achievement-stars">
+                <span class="star-empty">☆</span>
+                <span class="star-empty">☆</span>
+                <span class="star-empty">☆</span>
             </div>
             
-            <div class="post-game-buttons">
-                <button id="home-btn" class="btn glow-btn">Back Home</button>
-                <button id="leaderboard-btn" class="btn glow-btn">View Leaderboard</button>
+            <div class="achievement-text">
+                <p>★ 15s = 1 star | ★★ 30s = 2 stars | ★★★ 45s = 3 stars</p>
+            </div>
+            
+            <div class="save-score">
+                <input type="text" id="player-name" placeholder="Enter your name" maxlength="15">
+                <button id="save-score-btn" class="btn glow-btn">Save Score</button>
+            </div>
+            
+            <div id="score-saved" class="hidden">
+                <div class="success-message">
+                    <p>Score saved successfully!</p>
+                </div>
+                
+                <div class="post-game-buttons">
+                    <button id="home-btn" class="btn glow-btn">Back Home</button>
+                    <button id="leaderboard-btn" class="btn glow-btn">View Leaderboard</button>
+                </div>
             </div>
         </div>
     </div>
@@ -38,16 +74,71 @@
         const emoji = urlParams.get('emoji');
         
         // Display score data
-        document.getElementById('final-time').textContent = time;
-        document.getElementById('final-wave').textContent = wave;
-        document.getElementById('final-emoji').textContent = emoji;
+        document.getElementById('final-time').textContent = time || '0';
+        document.getElementById('final-wave').textContent = wave || '0';
+        document.getElementById('final-emoji').textContent = emoji || '😎';
+        
+        // Calculate achievement stars
+        let stars = 0;
+        if (time >= 15) stars = 1;
+        if (time >= 30) stars = 2;
+        if (time >= 45) stars = 3;
+        
+        // Update achievement stars
+        const starsContainer = document.getElementById('achievement-stars');
+        starsContainer.innerHTML = '';
+        for (let i = 0; i < 3; i++) {
+            const starElement = document.createElement('span');
+            starElement.className = i < stars ? 'star-achieved' : 'star-empty';
+            starElement.textContent = i < stars ? '★' : '☆';
+            starsContainer.appendChild(starElement);
+        }
         
         // Button event listeners
-        document.getElementById('home-btn').addEventListener('click', function() {
+        document.getElementById('save-score-btn').addEventListener('click', function() {
+            const playerName = document.getElementById('player-name').value.trim();
+            
+            if (!playerName) {
+                alert('Please enter your name!');
+                return;
+            }
+            
+            // Send score to server
+            fetch('/api/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: playerName,
+                    time_survived: parseInt(time) || 0,
+                    wave: parseInt(wave) || 0
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Hide save score form
+                    document.querySelector('.save-score').classList.add('hidden');
+                    
+                    // Show success message and buttons
+                    document.getElementById('score-saved').classList.remove('hidden');
+                } else {
+                    alert('Error saving score. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error saving score. Please try again.');
+            });
+        });
+        
+        // Set up navigation buttons
+        document.getElementById('home-btn')?.addEventListener('click', function() {
             window.location.href = '/';
         });
         
-        document.getElementById('leaderboard-btn').addEventListener('click', function() {
+        document.getElementById('leaderboard-btn')?.addEventListener('click', function() {
             window.location.href = '/leaderboard';
         });
         
