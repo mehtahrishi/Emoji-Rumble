@@ -2,9 +2,36 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Emoji Rumble - Game</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* Mobile-specific styles */
+        @media (max-width: 768px) {
+            .game-container {
+                width: 100%;
+                height: 100vh;
+                max-height: 80vh;
+                touch-action: none; /* Prevent browser handling of touch events */
+            }
+            
+            #game-canvas {
+                touch-action: none;
+            }
+            
+            .mobile-controls-hint {
+                position: absolute;
+                bottom: 10px;
+                left: 0;
+                right: 0;
+                text-align: center;
+                color: rgba(255, 255, 255, 0.7);
+                font-size: 0.7rem;
+                padding: 5px;
+                z-index: 5;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="stars-container"></div>
@@ -22,6 +49,7 @@
         </div>
         
         <canvas id="game-canvas"></canvas>
+        <div class="mobile-controls-hint">Swipe to move</div>
         
         <div id="game-over" class="hidden">
             <h2>Game Over</h2>
@@ -55,6 +83,16 @@
         
         // Pass the selected emoji to the game.js
         window.playerSelectedEmoji = selectedEmoji;
+        
+        // Detect if device is mobile
+        window.isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        // Prevent scrolling on mobile devices when touching the game
+        document.addEventListener('touchmove', function(e) {
+            if (e.target.id === 'game-canvas') {
+                e.preventDefault();
+            }
+        }, { passive: false });
     </script>
     <script src="{{ url_for('static', filename='js/game.js') }}"></script>
     <script>
@@ -67,6 +105,11 @@
             star.style.top = `${Math.random() * 100}%`;
             star.style.animationDelay = `${Math.random() * 10}s`;
             starsContainer.appendChild(star);
+        }
+        
+        // Hide mobile controls hint on desktop
+        if (!window.isMobileDevice) {
+            document.querySelector('.mobile-controls-hint').style.display = 'none';
         }
     </script>
 </body>
