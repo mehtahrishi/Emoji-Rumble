@@ -2,10 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Emoji Rumble</title>
-        <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
-
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
@@ -32,12 +31,20 @@
         
         <div class="game-description">
             <p>Survive waves of attacking emojis in this bullet hell game!</p>
-            <p>Use arrow keys to move.</p>
+            <p class="desktop-controls">Use arrow keys to move.</p>
+            <p class="mobile-controls">Swipe to move on mobile.</p>
             <p>Avoid enemy emojis at all costs.</p>
         </div>
     </div>
 
     <script>
+        // Detect if device is mobile
+        const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        // Show/hide appropriate control instructions
+        document.querySelector('.desktop-controls').style.display = isMobileDevice ? 'none' : 'block';
+        document.querySelector('.mobile-controls').style.display = isMobileDevice ? 'block' : 'none';
+        
         // Emoji selection
         const emojiOptions = document.querySelectorAll('.emoji-option');
         let selectedEmoji = '🗿'; // Default emoji
