@@ -6,7 +6,7 @@ import datetime
 
 # Load environment variables
 load_dotenv()
-mongo_uri = os.getenv("MONGO_URI")
+mongo_uri = "mongodb+srv://mehtahrishi45:mehtahrishi45@cluster0.zbozo.mongodb.net/emoji_survival_arena?retryWrites=true&w=majority&appName=Cluster0"
 
 # Initialize Flask app
 app = Flask(__name__)
