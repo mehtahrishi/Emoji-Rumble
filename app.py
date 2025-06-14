@@ -51,7 +51,6 @@ def submit_score():
         'time_survived': data['time_survived'],
         'wave': data['wave'],
         'date': datetime.datetime.now(datetime.timezone.utc)
-
     }
     
     # Insert into database
@@ -67,10 +66,10 @@ def get_leaderboard():
                      .sort('time_survived', -1)
                      .limit(10))
     
-    # Convert datetime objects to strings for JSON serialization
+    # Convert datetime objects to ISO format
     for score in top_scores:
-        if 'date' in score:
-            score['date'] = score['date'].strftime('%d-%m-%Y %H:%M:%S')  # Indian date format (DD-MM-YYYY)
+        if 'date' in score and isinstance(score['date'], datetime.datetime):
+            score['date'] = score['date'].isoformat()
     
     return jsonify(top_scores)
 
